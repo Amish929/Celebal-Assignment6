@@ -1,0 +1,67 @@
+Task: PersistentVolume (PV) and PersistentVolumeClaim (PVC)
+
+✅ What are PV and PVC?
+| Concept                           | Description                                                                                  |
+| --------------------------------- | -------------------------------------------------------------------------------------------- |
+| PV (Persistent Volume)        | A piece of storage in the cluster, provisioned by an admin or dynamically by storage classes |
+| PVC (Persistent Volume Claim) | A request for storage by a user (e.g., size, access mode)                                    |
+| Pod                           | Uses the PVC to mount storage inside the container                                           |
+
+🔹 Step 1: Create a PersistentVolume
+   # pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: demo-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/data
+
+Apply:
+kubectl apply -f pv.yaml
+
+🔹 Step 2: Create a PersistentVolumeClaim
+# pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: demo-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+Apply:
+kubectl apply -f pvc.yaml
+
+🔹 Step 3: Use PVC in a Pod
+# pod-using-pvc.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pvc-pod
+spec:
+  containers:
+    - name: myapp
+      image: nginx
+      volumeMounts:
+        - mountPath: "/usr/share/nginx/html"
+          name: storage
+  volumes:
+    - name: storage
+      persistentVolumeClaim:
+        claimName: demo-pvc
+
+Apply:
+kubectl apply -f pod-using-pvc.yaml
+
+🔍 Verify
+    kubectl get pv
+   kubectl get pvc
+   kubectl get pod pvc-pod

@@ -1,0 +1,122 @@
+Task: Managing Kubernetes with Azure Kubernetes Service (AKS), Creating and managing AKS clusters, Scaling and upgrading AKS clusters.
+
+      Configure liveliness and readiness probes for pods in AKS cluster.
+
+✅ Step 1: Create an AKS Cluster (Azure Portal)
+Go to https://portal.azure.com
+
+Search for "Kubernetes services"
+
+Click Create → Create a Kubernetes cluster
+
+Fill in the required details:
+
+Subscription: (Select your subscription)
+
+Resource Group: aks-demo-rg (create new or use existing)
+
+Cluster Name: aks-demo
+
+Region: e.g., Central India
+
+Node Size: Standard_B2s (or use default)
+
+Node Count: 1 (for testing)
+
+Click Review + Create → Create
+
+✅ Wait for deployment (~5–10 mins)
+
+✅ Step 2: Connect to the AKS Cluster
+Go to the deployed AKS cluster → Connect
+
+Run the login commands on Azure Cloud Shell or your local terminal with Azure CLI:
+az login
+az account set --subscription "<your-subscription-name>"
+az aks get-credentials --resource-group aks-demo-rg --name aks-demo
+
+Confirm:kubectl get nodes
+
+✅ Step 3: Configure Liveness and Readiness Probes
+Create a test deployment with both probes.
+
+Sample YAML:
+
+# nginx-probes.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-probes
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - containerPort: 80
+    readinessProbe:
+      httpGet:
+        path: /
+        port: 80
+      initialDelaySeconds: 5
+      periodSeconds: 5
+    livenessProbe:
+      httpGet:
+        path: /
+        port: 80
+      initialDelaySeconds: 10
+      periodSeconds: 10
+
+Apply it:kubectl apply -f nginx-probes.yaml
+
+Verify:kubectl describe pod nginx-probes
+
+✅ Step 4: Scale the AKS Cluster
+To scale pods:kubectl scale deployment nginx-deployment --replicas=3
+
+To scale the cluster (node count):az aks scale --resource-group aks-demo-rg --name aks-demo --node-count 2
+
+✅ Step 5: Upgrade AKS Cluster (via Portal)
+Go to AKS cluster → Upgrade
+
+You’ll see available versions (e.g., upgrade from 1.29.0 to 1.29.3)
+
+Click Upgrade, and Azure will perform a rolling upgrade
+
+
+Use this YAML instead (nginx-deployment.yaml):
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+Apply it.
+Now scale.
+
+

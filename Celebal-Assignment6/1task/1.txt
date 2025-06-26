@@ -1,0 +1,149 @@
+Task: Deploy Replica Set and Replication Controller, and deployment. Also learn the advantages and disadvantages of each.
+
+✅ Pre-requisites (Assuming you already have this)
+ Kubernetes cluster (minikube or AKS)
+
+ kubectl installed and configured
+
+🔹 PART 1: ReplicationController
+🔸 What is ReplicationController?
+Ensures a specified number of pod replicas are running at any time.
+
+It is the older way of replication management (mostly replaced by ReplicaSet/Deployment).
+
+🔧 Step-by-Step to Create ReplicationController
+Step 1: Create a file rc-nginx.yaml
+
+ apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: nginx-rc
+spec:
+  replicas: 2
+  selector:
+    app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+
+Step 2: Apply the file
+kubectl apply -f rc-nginx.yaml
+
+Step 3: Verify
+kubectl get rc
+kubectl get pods
+
+Step 4: Delete
+kubectl delete -f rc-nginx.yaml
+
+
+🔹 PART 2: ReplicaSet
+🔸 What is ReplicaSet?
+   Newer version of ReplicationController
+
+   Adds label selector matching
+
+   Usually not used directly; used by Deployment
+
+🔧 Step-by-Step to Create ReplicaSet
+Step 1: Create a file replicaset-nginx.yaml
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx-rs
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+
+Step 2: Apply the file
+kubectl apply -f replicaset-nginx.yaml
+
+Step 3: Verify
+kubectl get rs
+kubectl get pods
+
+Step 4: Delete
+kubectl delete -f replicaset-nginx.yaml
+
+
+🔹 PART 3: Deployment
+🔸 What is a Deployment?
+Manages ReplicaSet for you
+
+Supports rolling updates, rollbacks
+
+Most commonly used in real-world
+
+🔧 Step-by-Step to Create Deployment
+Step 1: Create a file deployment-nginx.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+Step 2: Apply the file
+kubectl apply -f deployment-nginx.yaml
+
+Step 3: Verify
+kubectl get deployments
+kubectl get rs
+kubectl get pods
+
+Step 4: Update the Deployment
+kubectl set image deployment/nginx-deploy nginx=nginx:1.19
+
+Step 5: Rollback
+kubectl rollout undo deployment/nginx-deploy
+
+Step 6: Delete
+kubectl delete -f deployment-nginx.yaml
+
+Advantages and Disvantages
+
+| Feature                | ReplicationController | ReplicaSet           | Deployment |
+| ---------------------- | --------------------- | -------------------- | ---------- |
+| Recommended to use     | ❌                     | ❌ (used internally)  | ✅          |
+| Auto healing of Pods   | ✅                     | ✅                    | ✅          |
+| Rolling updates        | ❌                     | ❌                    | ✅          |
+| Rollbacks              | ❌                     | ❌                    | ✅          |
+| Label selector support | ❌                     | ✅ (matchExpressions) | ✅          |
+
+
+
+
+

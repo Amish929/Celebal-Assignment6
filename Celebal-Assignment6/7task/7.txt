@@ -1,0 +1,48 @@
+Task: Configure health probes for pods.
+
+✅ Configure Health Probes for Pods in AKS (Liveness & Readiness Probes)
+    Health probes are used in Kubernetes to check if your pod is:
+
+    Ready to accept traffic (Readiness Probe)
+
+    Healthy and should keep running (Liveness Probe)
+
+🛠️ Step 1: Create a YAML File for Health Probes
+Create a file: nginx-probes.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-health
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - containerPort: 80
+    livenessProbe:
+      httpGet:
+        path: /
+        port: 80
+      initialDelaySeconds: 10
+      periodSeconds: 5
+    readinessProbe:
+      httpGet:
+        path: /
+        port: 80
+      initialDelaySeconds: 5
+      periodSeconds: 5
+
+🛠️ Step 2: Apply the YAML to Your AKS Cluster
+   kubectl apply -f nginx-probes.yaml
+Check pod status:kubectl get pods
+
+🔍 Step 3: Describe and Monitor the Pod
+kubectl describe pod nginx-health
+
+✅ Look for:
+
+Readiness probe succeeded
+
+Liveness probe succeeded
+
+

@@ -1,0 +1,42 @@
+Task: Configure Taints and Tolerants.
+
+Taints and tolerations are used to control which pods can be scheduled on which nodes in your AKS (or any Kubernetes) cluster.
+
+| Concept        | Purpose                                                                      |
+| -------------- | ---------------------------------------------------------------------------- |
+| Taint      | Applied to a node. It repels all pods that don’t explicitly tolerate it. |
+| Toleration | Applied to a pod. It allows the pod to be scheduled onto tainted nodes.  |
+
+🔹 Step 1: Add a Taint to a Node
+Get your node names:kubectl get nodes
+
+Taint a node:kubectl taint nodes <node-name> key=value:NoSchedule
+
+🔹 Step 2: Create a Pod with a Toleration
+Create a file toleration-pod.yaml:
+apiVersion: v1
+kind: Pod
+metadata:
+  name: toleration-pod
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+  tolerations:
+  - key: "special"
+    operator: "Equal"
+    value: "nginx"
+    effect: "NoSchedule"
+
+Apply it:kubectl apply -f toleration-pod.yaml
+
+🔹 Step 3: Confirm It Works
+Check where your pod is scheduled:kubectl get pods -o wide
+
+✅ If everything is correct, the pod should be running on the tainted node.
+
+🔹 Step 4: Test What Happens Without Toleration
+Try deploying the same pod without the toleration block. It will stay in Pending state and won’t schedule on the tainted node.
+
+
+

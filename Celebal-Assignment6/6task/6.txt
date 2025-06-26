@@ -1,0 +1,55 @@
+Task: Create and attach persistent volume claims to pods.
+
+📄 Step 1: Create a PersistentVolumeClaim
+Create a file: pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: azure-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: managed-premium
+
+Apply it:kubectl apply -f pvc.yaml
+
+📄 Step 2: Create a Pod That Uses the PVC
+Create a file: pvc-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pvc-demo-pod
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    volumeMounts:
+    - mountPath: "/mnt/azure"
+      name: azure-storage
+  volumes:
+  - name: azure-storage
+    persistentVolumeClaim:
+      claimName: azure-pvc
+
+Apply it:kubectl apply -f pvc-pod.yaml
+
+🧪 Step 3: Verify
+   kubectl get pvc
+   kubectl get pv
+   kubectl get pod pvc-demo-pod
+   kubectl describe pvc azure-pvc
+
+📁 Optional: Write a File Inside the Pod
+
+   kubectl exec -it pvc-demo-pod -- bash
+   cd /mnt/azure
+   echo "hello from AKS PVC" > hello.txt
+   cat hello.txt
+
+✅ Syntax to Remove a Taint
+    kubectl taint nodes <node-name> <key>-
+
+

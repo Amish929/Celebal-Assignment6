@@ -1,0 +1,50 @@
+Task: Configure autoscaling in your cluster (Horizontal scaling)
+
+Horizontal Pod Autoscaler (HPA) automatically increases or decreases the number of pod replicas in a deployment based on CPU usage or custom metrics.
+
+🛠️ Step 1: Verify or Install Metrics Server
+Check if it’s already running:
+kubectl get deployment metrics-server -n kube-system
+
+If not, install it using:
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+Then wait a few seconds and test:
+  kubectl top nodes
+  kubectl top pods
+
+🛠️ Step 2: Create a Sample Deployment
+Create a file: autoscale-deployment.yaml
+ apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-autoscale
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-autoscale
+  template:
+    metadata:
+      labels:
+        app: nginx-autoscale
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        resources:
+          requests:
+            cpu: 100m
+          limits:
+            cpu: 200m
+        ports:
+        - containerPort: 80
+
+Apply it:kubectl apply -f autoscale-deployment.yaml
+
+🛠️ Step 3: Create the Horizontal Pod Autoscaler (HPA)
+    kubectl autoscale deployment nginx-autoscale --cpu-percent=50 --min=1 --max=5
+
+✅ Check:
+    kubectl get hpa
+    kubectl get pods -w
